@@ -20,6 +20,30 @@ We kindly ask you to include the full citation for the above mentioned work if y
 
 Full documentation can be found at [readthedocs](https://lsst-resspect.readthedocs.io/en/latest/).
 
+## Daily FASTDB analysis (in development)
+
+The `resspect_daily` command is the entry point for running one scheduled
+RESSPECT analysis against FASTDB. The first implementation performs the
+read-only orchestration stage: it validates the configured processing version,
+retrieves hot transients and known spectra, filters objects already requested by
+the same requester, and writes a run summary. Scientific selection and request
+submission are not enabled yet.
+
+Copy and edit `config/resspect-daily.example.yaml`, then run:
+
+```bash
+resspect_daily --config config/resspect-daily.example.yaml --dry-run
+```
+
+Set `fastdb_client_path` in the YAML file to the FASTDB client directory. On
+NERSC, use the shared client at
+`/global/cfs/cdirs/lsst/groups/TD/SOFTWARE/fastdb_deployment/fastdb_client`.
+
+FASTDB credentials remain in the profile consumed by `FASTDBClient`; do not put
+them in the RESSPECT YAML file. Run artifacts are written under the configured
+`state_dir`, and logs are written both to the terminal and its `logs/`
+subdirectory.
+
 # Dependencies
 
 ### For main code:

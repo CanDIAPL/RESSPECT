@@ -1,0 +1,14 @@
+# Credentials remain in the profile read by FASTDBClient; do not put them here.
+fastdb_profile: local-kind
+fastdb_client_path: /absolute/path/to/FASTDB/client
+processing_version: lass
+
+requester: resspect-local
+state_dir: ../resspect-state
+bootstrap_features: ../data/tests/test_features.csv
+
+detected_in_last_days: 14
+batch_size: 5
+
+# Set mjd_now only when replaying simulated data at a particular time.
+# mjd_now: 61258.5

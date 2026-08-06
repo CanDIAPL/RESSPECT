@@ -32,6 +32,7 @@ dependencies = [
     "requests",
     "pooch",
     "platformdirs",
+    "PyYAML>=6.0",
 ]
 
 [project.urls]
@@ -48,6 +49,7 @@ fit_dataset = "resspect.scripts.fit_dataset:main"
 make_metrics_plots = "resspect.scripts.make_metrics_plots:main"
 run_loop = "resspect.scripts.run_loop:main"
 run_time_domain = "resspect.scripts.run_time_domain:main"
+resspect_daily = "resspect.scripts.resspect_daily:main"
 
 [project.optional-dependencies]
 dev = [
