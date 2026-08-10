@@ -1,9 +1,9 @@
 # Credentials remain in the profile read by FASTDBClient; do not put them here.
-fastdb_profile: local-kind
+fastdb_profile: production
 fastdb_client_path: /absolute/path/to/FASTDB/client
-processing_version: lass
+processing_version: realtime
 
-requester: resspect-local
+requester: resspect-daily
 state_dir: ../resspect-state
 bootstrap_features: ../data/tests/test_features.csv
 
