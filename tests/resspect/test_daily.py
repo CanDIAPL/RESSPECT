@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+import resspect.daily as daily_module
 from resspect.daily import run_daily
 from resspect.daily_configuration import load_configuration
 
@@ -37,6 +38,7 @@ class FakeFastDB:
                     }
                 ],
             },
+            "/spectrum/askforspectrum": {"status": "ok", "num": 1},
         }
         return responses[endpoint]
 
@@ -86,12 +88,24 @@ state_dir: state
         load_configuration(config_path)
 
 
-def test_read_stage_filters_requests_from_same_requester(tmp_path):
+def test_daily_run_filters_previous_requests_and_selects_targets(tmp_path, monkeypatch):
     """Objects already requested by this requester leave the candidate pool."""
     config_path = tmp_path / "daily.yaml"
     write_configuration(config_path)
     configuration = load_configuration(config_path)
     fastdb = FakeFastDB()
+    proposal = {
+        "rootid": "new-object",
+        "ra": 1.2,
+        "dec": 3.4,
+        "priority": 3,
+        "probability_ia": 0.5,
+    }
+    monkeypatch.setattr(
+        daily_module,
+        "select_spectrum_targets",
+        lambda hot_transients, eligible_root_ids, config, run_dir: ([proposal], 1),
+    )
 
     summary = run_daily(
         configuration,
@@ -104,16 +118,56 @@ def test_read_stage_filters_requests_from_same_requester(tmp_path):
     assert summary["known_spectra"] == 1
     assert summary["previously_requested_by_requester"] == 1
     assert summary["eligible_after_request_filter"] == 1
+    assert summary["features_extracted"] == 1
+    assert summary["targets_selected"] == 1
     assert summary["requests_submitted"] == 0
 
     run_dir = tmp_path / "state" / "runs" / "test-run"
     assert json.loads((run_dir / "eligible-rootids.json").read_text())["rootids"] == ["new-object"]
     assert json.loads((run_dir / "summary.json").read_text())["mode"] == "dry-run"
+    requests = json.loads((run_dir / "proposed-spectrum-requests.json").read_text())
+    assert requests["requests"] == [proposal]
+    assert not any(call[0] == "/spectrum/askforspectrum" for call in fastdb.calls)
 
     wanted_call = next(call for call in fastdb.calls if call[0] == "/spectrum/spectrawanted")
     assert wanted_call[1]["requester"] == "resspect-local"
     assert wanted_call[1]["processing_version"] == "lass"
     assert wanted_call[1]["detected_since_mjd"] is None
+
+
+def test_live_run_submits_selected_targets(tmp_path, monkeypatch):
+    """A live run sends the proposed requests to FASTDB."""
+    config_path = tmp_path / "daily.yaml"
+    write_configuration(config_path)
+    configuration = load_configuration(config_path)
+    fastdb = FakeFastDB()
+    proposal = {
+        "rootid": "new-object",
+        "ra": 1.2,
+        "dec": 3.4,
+        "priority": 3,
+        "probability_ia": 0.5,
+    }
+    monkeypatch.setattr(
+        daily_module,
+        "select_spectrum_targets",
+        lambda hot_transients, eligible_root_ids, config, run_dir: ([proposal], 1),
+    )
+
+    summary = run_daily(configuration, fastdb, dry_run=False, run_id="live-run")
+
+    assert summary["requests_submitted"] == 1
+    endpoint, payload = next(
+        call for call in fastdb.calls if call[0] == "/spectrum/askforspectrum"
+    )
+    assert endpoint == "/spectrum/askforspectrum"
+    assert payload == {
+        "requester": "resspect-local",
+        "rootids": ["new-object"],
+        "ras": [1.2],
+        "decs": [3.4],
+        "priorities": [3],
+    }
 
 
 def test_read_stage_rejects_unknown_processing_version(tmp_path):

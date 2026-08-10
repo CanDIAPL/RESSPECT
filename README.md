@@ -22,12 +22,12 @@ Full documentation can be found at [readthedocs](https://lsst-resspect.readthedo
 
 ## Daily FASTDB analysis (in development)
 
-The `resspect_daily` command is the entry point for running one scheduled
-RESSPECT analysis against FASTDB. The first implementation performs the
-read-only orchestration stage: it validates the configured processing version,
-retrieves hot transients and known spectra, filters objects already requested by
-the same requester, and writes a run summary. Scientific selection and request
-submission are not enabled yet.
+The `resspect_daily` command runs one scheduled RESSPECT analysis against
+FASTDB. It retrieves hot transients, excludes objects with known spectra or
+previous requests from the same requester, extracts Malanchev features, trains
+a binary Ia/non-Ia random forest, and selects targets with uncertainty
+sampling. A dry run writes the proposed requests without changing FASTDB;
+without `--dry-run`, they are sent to `/spectrum/askforspectrum`.
 
 Copy and edit `config/resspect-daily.example.yaml`, then run:
 
