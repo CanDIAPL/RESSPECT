@@ -48,6 +48,14 @@ kubectl create job --from=cronjob/resspect-daily resspect-daily-manual \
 kubectl logs --namespace fastdb-local job/resspect-daily-manual --all-containers
 ```
 
+To unsuspend the job, remove the dry-run flag, or change the schedule edit the following lines in the values file (e.g. `helm/resspect-daily/values-kind.yaml`)
+```bash
+schedule: "0 12 * * *"
+timeZone: America/Los_Angeles
+suspend: true
+dryRun: true
+```
+
 ## Production runs
 
 For a production cluster:

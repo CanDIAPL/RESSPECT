@@ -6,6 +6,11 @@ image:
 initImage:
   pullPolicy: Never
 
+schedule: "0 12 * * *"
+timeZone: America/Los_Angeles
+suspend: true
+dryRun: true
+
 fastdb:
   profile: local-kind-cronjob
 
