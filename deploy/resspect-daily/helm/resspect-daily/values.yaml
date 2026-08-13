@@ -1,0 +1,44 @@
+image:
+  repository: resspect-daily
+  tag: dev
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+initImage:
+  repository: busybox
+  tag: latest
+  pullPolicy: IfNotPresent
+
+schedule: "0 12 * * *"
+timeZone: America/Los_Angeles
+suspend: true
+dryRun: true
+
+fastdb:
+  profile: production
+  secretName: resspect-fastdb
+
+analysis:
+  processingVersion: realtime
+  requester: resspect
+  detectedInLastDays: 14
+  batchSize: 5
+  mjdNow: null
+  bootstrapFeatures: /opt/resspect/bootstrap/test_features.csv
+
+state:
+  existingClaim: ""
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "2"
+    memory: 2Gi
+
+startingDeadlineSeconds: 1800
+successfulJobsHistoryLimit: 3
+failedJobsHistoryLimit: 3
+backoffLimit: 1
+activeDeadlineSeconds: 3600

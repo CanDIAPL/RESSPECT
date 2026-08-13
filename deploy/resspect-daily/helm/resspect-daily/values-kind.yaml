@@ -1,0 +1,15 @@
+image:
+  repository: resspect-daily
+  tag: dev
+  pullPolicy: Never
+
+initImage:
+  pullPolicy: Never
+
+fastdb:
+  profile: local-kind-cronjob
+
+analysis:
+  processingVersion: lass
+  requester: resspect-local
+  mjdNow: 10.0

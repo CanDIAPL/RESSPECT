@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "resspect-daily.fullname" . }}
+  labels:
+    {{- include "resspect-daily.labels" . | nindent 4 }}
+data:
+  daily.yaml: |
+    fastdb_profile: {{ .Values.fastdb.profile | quote }}
+    fastdb_client_path: /opt/fastdb-client
+    processing_version: {{ .Values.analysis.processingVersion | quote }}
+
+    requester: {{ .Values.analysis.requester | quote }}
+    state_dir: /var/lib/resspect
+    bootstrap_features: {{ .Values.analysis.bootstrapFeatures | quote }}
+
+    detected_in_last_days: {{ .Values.analysis.detectedInLastDays }}
+    batch_size: {{ .Values.analysis.batchSize }}
+    {{- if ne .Values.analysis.mjdNow nil }}
+    mjd_now: {{ .Values.analysis.mjdNow }}
+    {{- end }}

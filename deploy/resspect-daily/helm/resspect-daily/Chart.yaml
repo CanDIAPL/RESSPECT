@@ -1,0 +1,6 @@
+apiVersion: v2
+name: resspect-daily
+description: Daily RESSPECT analysis against FASTDB
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

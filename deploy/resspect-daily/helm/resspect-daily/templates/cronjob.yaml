@@ -1,0 +1,107 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "resspect-daily.fullname" . }}
+  labels:
+    {{- include "resspect-daily.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  timeZone: {{ .Values.timeZone | quote }}
+  suspend: {{ .Values.suspend }}
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: {{ .Values.startingDeadlineSeconds }}
+  successfulJobsHistoryLimit: {{ .Values.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ .Values.backoffLimit }}
+      activeDeadlineSeconds: {{ .Values.activeDeadlineSeconds }}
+      template:
+        metadata:
+          labels:
+            {{- include "resspect-daily.labels" . | nindent 12 }}
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+          {{- with .Values.image.pullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          initContainers:
+            - name: prepare-fastdb-credentials
+              image: "{{ .Values.initImage.repository }}:{{ .Values.initImage.tag }}"
+              imagePullPolicy: {{ .Values.initImage.pullPolicy }}
+              command:
+                - /bin/sh
+                - -c
+                - >-
+                  cp /source/fastdb.ini /credentials/.fastdb.ini &&
+                  chown 10001:10001 /credentials/.fastdb.ini &&
+                  chmod 0600 /credentials/.fastdb.ini
+              securityContext:
+                runAsNonRoot: false
+                runAsUser: 0
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+                  add: ["CHOWN", "FOWNER"]
+              volumeMounts:
+                - name: credential-source
+                  mountPath: /source
+                  readOnly: true
+                - name: credentials
+                  mountPath: /credentials
+          containers:
+            - name: resspect-daily
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              env:
+                - name: MPLCONFIGDIR
+                  value: /tmp/matplotlib
+              args:
+                - --config
+                - /etc/resspect/daily.yaml
+                {{- if .Values.dryRun }}
+                - --dry-run
+                {{- end }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+              volumeMounts:
+                - name: config
+                  mountPath: /etc/resspect
+                  readOnly: true
+                - name: credentials
+                  mountPath: /home/resspect/.fastdb.ini
+                  subPath: .fastdb.ini
+                  readOnly: true
+                - name: state
+                  mountPath: /var/lib/resspect
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: config
+              configMap:
+                name: {{ include "resspect-daily.fullname" . }}
+            - name: credential-source
+              secret:
+                secretName: {{ required "fastdb.secretName is required" .Values.fastdb.secretName }}
+                defaultMode: 0400
+            - name: credentials
+              emptyDir: {}
+            - name: state
+              {{- if .Values.state.existingClaim }}
+              persistentVolumeClaim:
+                claimName: {{ .Values.state.existingClaim }}
+              {{- else }}
+              emptyDir: {}
+              {{- end }}
+            - name: tmp
+              emptyDir: {}
