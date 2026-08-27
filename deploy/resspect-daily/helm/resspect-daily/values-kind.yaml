@@ -14,6 +14,8 @@ dryRun: true
 fastdb:
   profile: local-kind-cronjob
 
+#for local testing overwrite the realtime processing version with simulated "lass" data
+#and set the mjdNow date to something close to the simulated data
 analysis:
   processingVersion: lass
   requester: resspect-local
