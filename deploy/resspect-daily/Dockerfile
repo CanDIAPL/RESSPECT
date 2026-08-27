@@ -1,9 +1,9 @@
 FROM python:3.12-slim AS builder
 
-# Pin the external FASTDB client so image builds are reproducible. Override
-# these arguments when intentionally testing a newer client revision.
-ARG FASTDB_CLIENT_URL=https://raw.githubusercontent.com/LSSTDESC/FASTDB/64f66c417c2f379b6f96a5a0bfe88ab77e22d433/client/fastdb_client.py
-ARG RESSPECT_VERSION=0.1.dev40
+# Use the FASTDB client from the main branch by default. Override this argument
+# to build with a different branch.
+ARG FASTDB_CLIENT_URL=https://raw.githubusercontent.com/LSSTDESC/FASTDB/main/client/fastdb_client.py
+ARG RESSPECT_VERSION=0.0.0
 
 WORKDIR /build/resspect
 COPY pyproject.toml README.md LICENSE ./

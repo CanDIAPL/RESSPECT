@@ -75,3 +75,8 @@ helm upgrade --install resspect-daily \
   --namespace YOUR_NAMESPACE \
   --values YOUR_VALUES.yaml
 ```
+
+## Things to note
+
+- The Fastdb client location is specified in the Dockerfile in this directory (`FASTDB_CLIENT_URL`)
+- By default we are using the test feature data for the pipeline `data/test/test_features.csv` which is copied in during the build. For a production runs we likely want to use different input data, we need to implement something so RESSPECT and see that file.
