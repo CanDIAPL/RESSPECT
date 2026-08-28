@@ -33,6 +33,9 @@ RUN python -m venv /opt/venv \
        '${FASTDB_CLIENT_URL}', \
        '/opt/fastdb-client/fastdb_client.py')"
 
+# RESSPECT imports its Numba-based bump model during package initialization.
+RUN /opt/venv/bin/pip install --no-cache-dir --timeout 600 --retries 10 numba
+
 FROM python:3.12-slim
 
 RUN useradd --create-home --uid 10001 resspect

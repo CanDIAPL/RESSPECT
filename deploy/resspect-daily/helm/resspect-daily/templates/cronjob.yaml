@@ -61,6 +61,8 @@ spec:
               env:
                 - name: MPLCONFIGDIR
                   value: /tmp/matplotlib
+                - name: NUMBA_CACHE_DIR
+                  value: /tmp/numba
               args:
                 - --config
                 - /etc/resspect/daily.yaml

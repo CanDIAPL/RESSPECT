@@ -10,7 +10,7 @@ import pandas as pd
 from astropy.time import Time
 
 from resspect.classifiers import random_forest
-from resspect.feature_extractors.malanchev import MalanchevFeatureExtractor
+from resspect.feature_extractors.malanchev import Malanchev
 from resspect.query_strategies import uncertainty_sampling
 
 LOGGER = logging.getLogger("resspect.daily")
@@ -95,7 +95,7 @@ def _object_coordinates(objinfo):
 def _malanchev_feature_columns(bootstrap):
     """Find the bands represented by the bootstrap Malanchev columns."""
 
-    feature_names = MalanchevFeatureExtractor().features_names
+    feature_names = Malanchev.feature_names
     feature_names_by_length = sorted(feature_names, key=len, reverse=True)
     bands = []
     for column in bootstrap.columns:
@@ -132,7 +132,7 @@ def extract_malanchev_features(lightcurves, eligible_root_ids, bands, feature_co
             LOGGER.warning("Skipping %s: FASTDB returned no usable photometry", rootid)
             continue
 
-        extractor = MalanchevFeatureExtractor()
+        extractor = Malanchev()
         extractor.photometry = photometry
         extractor.filters = bands
         extractor.fit_all()
